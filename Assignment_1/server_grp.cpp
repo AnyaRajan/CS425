@@ -59,7 +59,7 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
     getpeername(client_socket_fd, (struct sockaddr*)&client_addr, &addr_len);
     addClient(client_socket_fd, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), username);
 
-    std::string welcome_message = "Welcome " + username + "! Use commands like /create_group, /join_group, /group_msg, or /broadcast.\n";
+    std::string welcome_message = "Welcome to the chat server !";
     sendMessage(client_socket_fd, welcome_message);
 
     // Step 3: Handle client commands
@@ -139,7 +139,7 @@ int main(int argc,char* argv[]){
     while(1){
         //handle client requests.
         //Accept system call .
-         cout<<"Waiting for client"<<endl;
+        
         int client_socket_fd = accept(s_fd, (struct sockaddr*)&client_addr, &client_addr_size);
         if(client_socket_fd>=0)
         {
