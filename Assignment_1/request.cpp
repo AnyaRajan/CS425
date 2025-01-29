@@ -44,8 +44,11 @@ void HttpRequest::parseRequest(const std::string& rawRequest)
     std::cout << "Debug: Parsed Method: " << method << "\n";
 if (method == "/msg" || method == "/group_msg") {
     target = parts[1];
-    headers=parts[2];
-
+    for(long unsigned i=2;i<parts.size();i++)
+    {
+        headers += parts[i];
+        headers += " ";
+    }
 
     } else if (method == "/broadcast") 
     {

@@ -12,6 +12,9 @@
 #include<iostream>
 #include<fstream>
 #include"client.cpp"
+
+// remember to add in readme that we can only keep one word group name
+
 //utility function to log the serving of a file.
 void logServingFile(const std::string& path, const std::string& mimetype) {
     std::cout << "Serving file: " << path << " with MIME type: " << mimetype << std::endl;
