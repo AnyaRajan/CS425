@@ -6,45 +6,55 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-
+using namespace std;
+std::vector<std::string> split(const std::string& str, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    for (char ch : str) {
+        if (ch == delimiter) {
+            if (!token.empty()) {
+                tokens.push_back(token);
+                token.clear();
+            }
+        } else {
+            token += ch;
+        }
+    }
+    if (!token.empty()) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
 class HttpRequest {
 public:
     std::string method;                          // Command or HTTP method
-    std::string path;                            // Target (user, group, or file)
-    std::map<std::string, std::string> headers; // Additional details (e.g., message, group name)
+    std::string target;                            // Target (user, group, or file)
+ string headers;
 
     void parseRequest(const std::string& rawRequest);
     std::string readHtmlFile(const std::string& path);
     std::string getMimeType(const std::string& path);
 };
 
-void HttpRequest::parseRequest(const std::string& rawRequest) {
-    std::istringstream stream(rawRequest);
-    std::string firstWord;
+void HttpRequest::parseRequest(const std::string& rawRequest) 
+{
+    std::vector<std::string> parts = split(rawRequest, ' ');
+    method = parts[0];
 
-    // Extract the first word (command or method)
-    stream >> firstWord;
-    method = firstWord;
+    std::cout << "Debug: Parsed Method: " << method << "\n";
+if (method == "/msg" || method == "/group_msg") {
+    target = parts[1];
+    headers=parts[2];
 
-    if (method == "/msg" || method == "/group_msg") {
-        // Parse private or group message
-        std::string target, message;
-        stream >> target;               // Username or group name
-        std::getline(stream, message); // Message content
-        headers["target"] = target;
-        headers["message"] = message.substr(1); // Remove leading space
-    } else if (method == "/broadcast") {
-        // Parse broadcast message
-        std::string message;
-        std::getline(stream, message);
-        headers["message"] = message.substr(1); // Remove leading space
-    } else if (method == "/create_group" || method == "/join_group" || method == "/leave_group") {
-        // Parse group-related commands
-        std::string groupName;
-        stream >> groupName;
-        headers["group_name"] = groupName;
+
+    } else if (method == "/broadcast") 
+    {
+        headers = parts[1];
+       
+    } else if (method == "/create_group" || method == "/join_group" || method == "/leave_group") 
+    {
+        target = parts[1];
     } else {
-        // Unknown command
         std::cerr << "Unknown command: " << method << std::endl;
     }
 }

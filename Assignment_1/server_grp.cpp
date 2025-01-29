@@ -37,6 +37,7 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
     std::string password_prompt = "Enter your password: ";
     sendMessage(client_socket_fd, password_prompt);
 
+
     bytes_received = recv(client_socket_fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_received <= 0) {
         std::cerr << "Failed to receive password from client." << std::endl;
@@ -52,7 +53,6 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
         close(client_socket_fd);
         return;
     }
-
     // Step 2: Add the client
     sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
@@ -71,35 +71,36 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
         }
 
         buffer[bytes_received] = '\0'; // Null-terminate
-        std::string clientMessage = std::string(buffer);
+        string clientMessage = string(buffer);
 
         // Parse client message using HttpRequest
         HttpRequest req;
         req.parseRequest(clientMessage);
 
         // Command handling based on parsed request
-        if (req.method == "/create_group") {
-            createGroup(client_socket_fd, req.headers["group_name"]);
+        if (req.method == "/create_group") 
+        {
+            createGroup(client_socket_fd,username, req.target);
 
         } else if (req.method == "/join_group") {
-            joinGroup(client_socket_fd, username, req.headers["group_name"]);
+            joinGroup(client_socket_fd, username, req.target);
 
         } else if (req.method == "/leave_group") {
-            leaveGroup(client_socket_fd, username, req.headers["group_name"]);
+            leaveGroup(client_socket_fd, username, req.target);
 
         } else if (req.method == "/group_msg") {
-            std::string groupName = req.headers["group_name"];
-            std::string message = req.headers["message"];
+            std::string groupName = req.target;
+            std::string message = req.headers;
             sendGroupMessage(client_socket_fd, username, groupName, message);
 
         } else if (req.method == "/broadcast") {
-            std::string message = req.headers["message"];
+            std::string message = req.headers;
             broadcastMessage(username, message);
 
         } else if (req.method == "/msg") {
-            std::string target = req.headers["target"];
-            std::string message = req.headers["message"];
-            sendPrivateMessage(client_socket_fd, target, message);
+            std::string target = req.target;
+            std::string message = req.headers;
+            sendPrivateMessage(client_socket_fd, username,target, message);
 
         } else if (req.method == "/exit") {
             sendMessage(client_socket_fd, "Goodbye!\n");

@@ -67,16 +67,20 @@ void removeClient(int client_socket_fd) {
     }
 }
 
+
 // Function to create a group
-void createGroup(int clientSocket, const std::string& groupName) {
+void createGroup(int clientSocket, const string& username, string& groupName) {
     std::lock_guard<std::mutex> lock(serverMutex);
     if (groups.find(groupName) != groups.end()) {
         sendMessage(clientSocket, "Group " + groupName + " already exists.\n");
     } else {
-        groups[groupName] = {}; // Create a new group
-        sendMessage(clientSocket, "Group " + groupName + " created successfully.\n");
+        groups[groupName] = {};
+        groups[groupName].insert(username);
+        cout << "Debug: Group '" << groupName << "' created. Members: " << username << endl;
+        sendMessage(clientSocket, "Group " + groupName + " created successfully. " + username + " has been added to it.\n");
     }
 }
+
 
 // Function to join a group
 void joinGroup(int clientSocket, const std::string& username, const std::string& groupName) {
@@ -100,19 +104,34 @@ void leaveGroup(int clientSocket, const std::string& username, const std::string
     }
 }
 
-// Function to send a message to all users in a group
 void sendGroupMessage(int clientSocket, const std::string& username, const std::string& groupName, const std::string& message) {
     std::lock_guard<std::mutex> lock(serverMutex);
-    if (groups.find(groupName) == groups.end() || groups[groupName].find(username) == groups[groupName].end()) {
+
+    if (groupName.empty()) {
+        sendMessage(clientSocket, "Error: Group name is empty.\n");
+        std::cerr << "Error: Received an empty group name." << std::endl;
+        return;
+    }
+
+    std::cout << "Debug: Received group name -> '" << groupName << "'" << std::endl;
+
+    if (groups.find(groupName) == groups.end()) {
+        sendMessage(clientSocket, "Group '" + groupName + "' does not exist.\n");
+        return;
+    }
+
+    if (groups[groupName].find(username) == groups[groupName].end()) {
         sendMessage(clientSocket, "You are not part of group " + groupName + ".\n");
-    } else {
-        for (const std::string& member : groups[groupName]) {
-            if (member != username) {
-                sendMessage(onlineUsers[member], "[Group " + groupName + "] " + username + ": " + message + "\n");
-            }
+        return;
+    }
+
+    for (const std::string& member : groups[groupName]) {
+        if (member != username && onlineUsers.find(member) != onlineUsers.end()) {
+            sendMessage(onlineUsers[member], "[Group " + groupName + "] " + username + ": " + message + "\n");
         }
     }
 }
+
 
 // Function to broadcast a message to all online users (except sender)
 void broadcastMessage(const std::string& sender, const std::string& message) {
@@ -125,11 +144,11 @@ void broadcastMessage(const std::string& sender, const std::string& message) {
 }
 
 // Function to send a private message
-void sendPrivateMessage(int clientSocket, const std::string& target, const std::string& message) {
+void sendPrivateMessage(int clientSocket, const string& username,const std::string& target, const std::string& message) {
     std::lock_guard<std::mutex> lock(serverMutex);
     if (onlineUsers.find(target) != onlineUsers.end()) {
         int targetSocket = onlineUsers[target];
-        sendMessage(targetSocket, "Private message from user: " + message + "\n");
+        sendMessage(targetSocket, username+": " + message + "\n");
     } else {
         sendMessage(clientSocket, "User " + target + " is not online.\n");
     }
