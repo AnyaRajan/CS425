@@ -74,7 +74,14 @@ void createGroup(int clientSocket, const string& username, string& groupName) {
     std::lock_guard<std::mutex> lock(serverMutex);
     if (groups.find(groupName) != groups.end()) {
         sendMessage(clientSocket, "Group " + groupName + " already exists.\n");
-    } else {
+    } else 
+    {
+        if(groupName.empty())
+        {
+            sendMessage(clientSocket, "Error: Group name is empty.\n");
+            std::cerr << "Error: Received an empty group name." << std::endl;
+            return;
+        }
         groups[groupName] = {};
         groups[groupName].insert(username);
         cout << "Debug: Group '" << groupName << "' created. Members: " << username << endl;
@@ -88,7 +95,13 @@ void joinGroup(int clientSocket, const std::string& username, const std::string&
     std::lock_guard<std::mutex> lock(serverMutex);
     if (groups.find(groupName) == groups.end()) {
         sendMessage(clientSocket, "Group " + groupName + " does not exist.\n");
-    } else {
+    } else 
+    {
+        if(groups[groupName].find(username) != groups[groupName].end())
+        {
+            sendMessage(clientSocket, "You are already part of group " + groupName + ".\n");
+            return;
+        }
         groups[groupName].insert(username);
         sendMessage(clientSocket, "You joined group " + groupName + ".\n");
     }
