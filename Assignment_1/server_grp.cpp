@@ -23,21 +23,21 @@
 
 //utility function to log the serving of a file.
 
-void handleSignal(int signal) {
-    if (signal == SIGINT) {
-        std::cout << "\n[INFO] Server shutting down gracefully..." << std::endl;
-        serverRunning = false;
+// void handleSignal(int signal) {
+//     if (signal == SIGINT) {
+//         std::cout << "\n[INFO] Server shutting down gracefully..." << std::endl;
+//         serverRunning = false;
         
-        // Close all client connections
-        std::lock_guard<std::mutex> lock(clientSocketsMutex);
-        for (int socket_fd : clientSockets) {
-            close(socket_fd);
-        }
-        clientSockets.clear();
+//         // Close all client connections
+//         std::lock_guard<std::mutex> lock(clientSocketsMutex);
+//         for (int socket_fd : clientSockets) {
+//             close(socket_fd);
+//         }
+//         clientSockets.clear();
 
-        exit(0);
-    }
-}
+//         exit(0);
+//     }
+// }
 
 void logServingFile(const std::string& path, const std::string& mimetype) {
     std::cout << "Serving file: " << path << " with MIME type: " << mimetype << std::endl;
@@ -85,8 +85,7 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
     getpeername(client_socket_fd, (struct sockaddr*)&client_addr, &addr_len);
     addClient(client_socket_fd, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), username);
 
-    std::string welcome_message = "Welcome to the chat server !";
-    sendMessage(client_socket_fd, welcome_message);
+    welcomeClient(client_socket_fd);
     broadcastMessage(username,  username + " has joined the chat.");
     // Step 3: Handle client commands
     while (true) {
@@ -121,7 +120,7 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
 
         } else if (req.method == "/broadcast") {
             std::string message = req.headers;
-            broadcastMessage(username, message);
+            broadcastMessage(username, username + ": " + message);
 
         } else if (req.method == "/msg") {
             std::string target = req.target;
@@ -143,24 +142,21 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
 }
 
 
-int main(int argc,char* argv[]){
-    Server server = Server(stoi(argv[1]));
+int main(){
+    Server server = Server(8080);
     struct sockaddr_in client_addr;
     socklen_t client_addr_size;
     int s_fd;
     s_fd = server.start();
     client_addr_size = sizeof(struct sockaddr_in); 
-  std::unordered_map<std::string, std::string> users ;
-  users["alice"]="password123";
-    users["bob"]="qwerty456";
-    users["charlie"]="secure789";
-    users["dave"]="helloWorld!";
-    users["eve"]="trustno1";
-    users["frank"]="letmein";
-    users["grace"]="passw0rd";
-
-   
-
+  std::unordered_map<std::string, std::string> users = loadUsers("users.txt"); 
+//   users["alice"]="password123";
+//     users["bob"]="qwerty456";
+//     users["charlie"]="secure789";
+//     users["dave"]="helloWorld!";
+//     users["eve"]="trustno1";
+//     users["frank"]="letmein";
+//     users["grace"]="passw0rd";
 
 
     while(1){

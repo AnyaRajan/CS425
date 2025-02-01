@@ -157,9 +157,9 @@ void sendPrivateMessage(int clientSocket, const string& username,const std::stri
 }
 
 // Function to handle an individual client
-void handleClient(int client_socket_fd) {
+void welcomeClient(int client_socket_fd) {
     // Example: Placeholder logic for handling a client
-    std::string welcomeMessage = "Welcome to the server!\n";
+    std::string welcomeMessage = "Welcome to the chat server!\n";
     sendMessage(client_socket_fd, welcomeMessage);
     // Add more client-handling logic here (e.g., receiving messages, commands)
 }
@@ -179,6 +179,7 @@ std::unordered_map<std::string, std::string> loadUsers(const std::string& filena
         if (delimiter_pos != std::string::npos) {
             std::string username = line.substr(0, delimiter_pos);  // Extract username
             std::string password = line.substr(delimiter_pos + 1);  // Extract password
+            password.pop_back();  // Remove the trailing newline character
             users[username] = password;
         }
     }

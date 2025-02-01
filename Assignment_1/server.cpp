@@ -11,7 +11,7 @@
 #include <cstring>
 
 #include"server.h"
-using namespace std;
+
 class Server
 {
 public:
@@ -26,7 +26,7 @@ public:
         struct sockaddr_in server_addr; //structure for server address it helps to config and bind server socket.
         server_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
         if(server_socket_fd < 0){
-            cerr << "Failed to create server socket." << endl;
+            std::cerr << "Failed to create server socket." << std::endl;
             exit(1);
         }
 
@@ -36,18 +36,18 @@ public:
         server_addr.sin_addr.s_addr = htonl(INADDR_ANY);//INADDR_ANY allows the server to listen on all available network interfaces.
         //bind  socket to port.
         if(bind(server_socket_fd,(struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
-            std::cerr << "Failed to bind server socket." << endl;
+            std::cerr << "Failed to bind server socket." << std::endl;
             exit(1);
         }
 
         
         //listens on socket.
         if(listen(server_socket_fd, 5) < 0){
-            cerr << "Failed to listen on server socket." << endl;
+            std::cerr << "Failed to listen on server socket." << std::endl;
             exit(1);
         }
         
-        cout << "Server started on port : " << port << endl;
+        std::cout << "Server started on port : " << port << std::endl;
 
         return server_socket_fd;
     };
