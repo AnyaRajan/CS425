@@ -42,7 +42,14 @@ void HttpRequest::parseRequest(const std::string& rawRequest)
     method = parts[0];
 
     std::cout << "Debug: Parsed Method: " << method << "\n";
-if (method == "/msg" || method == "/group_msg") {
+if (method == "/msg" || method == "/group_msg") 
+{
+    if(parts.size() < 3 || parts[1].empty() || parts[2].empty())
+    {
+        std::cerr << "Invalid command: " << rawRequest << std::endl;
+        return;
+    }
+
     target = parts[1];
     for(long unsigned i=2;i<parts.size();i++)
     {
@@ -52,6 +59,11 @@ if (method == "/msg" || method == "/group_msg") {
 
     } else if (method == "/broadcast") 
     {
+        if(parts.size() < 2 || parts[1].empty())
+        {
+            std::cerr << "Invalid command: " << rawRequest << std::endl;
+            return;
+        }
        for(long unsigned i=1;i<parts.size();i++)
     {
         headers += parts[i];
@@ -60,6 +72,11 @@ if (method == "/msg" || method == "/group_msg") {
        
     } else if (method == "/create_group" || method == "/join_group" || method == "/leave_group") 
     {
+        if(parts.size() < 2 || parts[1].empty())
+        {
+            std::cerr << "Invalid command: " << rawRequest << std::endl;
+            return;
+        }
         target = parts[1];
     } else {
         std::cerr << "Unknown command: " << method << std::endl;
