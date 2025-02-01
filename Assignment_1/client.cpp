@@ -65,6 +65,7 @@ void removeClient(int client_socket_fd) {
     if (clientIt != connected_clients.end()) {
         connected_clients.erase(clientIt, connected_clients.end());
     }
+
 }
 
 
@@ -92,18 +93,6 @@ void joinGroup(int clientSocket, const std::string& username, const std::string&
         sendMessage(clientSocket, "You joined group " + groupName + ".\n");
     }
 }
-
-// Function to leave a group
-void leaveGroup(int clientSocket, const std::string& username, const std::string& groupName) {
-    std::lock_guard<std::mutex> lock(serverMutex);
-    if (groups.find(groupName) == groups.end() || groups[groupName].find(username) == groups[groupName].end()) {
-        sendMessage(clientSocket, "You are not part of group " + groupName + ".\n");
-    } else {
-        groups[groupName].erase(username);
-        sendMessage(clientSocket, "You left group " + groupName + ".\n");
-    }
-}
-
 void sendGroupMessage(int clientSocket, const std::string& username, const std::string& groupName, const std::string& message) {
     std::lock_guard<std::mutex> lock(serverMutex);
 
@@ -132,13 +121,26 @@ void sendGroupMessage(int clientSocket, const std::string& username, const std::
     }
 }
 
+// Function to leave a group
+void leaveGroup(int clientSocket, const std::string& username, const std::string& groupName) {
+    std::lock_guard<std::mutex> lock(serverMutex);
+    if (groups.find(groupName) == groups.end() || groups[groupName].find(username) == groups[groupName].end()) {
+        sendMessage(clientSocket, "You are not part of group " + groupName + ".\n");
+    } else {
+        groups[groupName].erase(username);
+        sendMessage(clientSocket, "You left group " + groupName + ".\n");
+        sendGroupMessage(clientSocket, username, groupName, "User " + username + " left the group.\n");
+    }
+}
+
+
 
 // Function to broadcast a message to all online users (except sender)
 void broadcastMessage(const std::string& sender, const std::string& message) {
     std::lock_guard<std::mutex> lock(serverMutex);
     for (const auto& [username, socket] : onlineUsers) {
         if (username != sender) {
-            sendMessage(socket, sender + ": " + message + "\n");
+            sendMessage(socket, message);
         }
     }
 }

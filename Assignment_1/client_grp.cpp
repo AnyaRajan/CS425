@@ -44,7 +44,7 @@ int main() {
         return 1;
     }
     cout<<"Socket created"<<endl;
-    
+
 
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(8080);
@@ -54,7 +54,7 @@ int main() {
         std::cerr << "Error connecting to server." << std::endl;
         return 0;
     }
-    cout<<"Connected"<<endl;
+
     cout << "Connected to the server." << endl;
 
     // Authentication

@@ -52,7 +52,11 @@ if (method == "/msg" || method == "/group_msg") {
 
     } else if (method == "/broadcast") 
     {
-        headers = parts[1];
+       for(long unsigned i=1;i<parts.size();i++)
+    {
+        headers += parts[i];
+        headers += " ";
+    }
        
     } else if (method == "/create_group" || method == "/join_group" || method == "/leave_group") 
     {

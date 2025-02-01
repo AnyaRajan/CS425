@@ -14,8 +14,31 @@
 #include"client.cpp"
 
 // remember to add in readme that we can only keep one word group name
+// if close server with Ctrl+C, it's not closing properly
+// sockets are not resued
+// join_group with empty name gives segmentation fault
+// if after closing a group, we try to send message to that group, it gives segmentation fault
+// if we try to send message to a group that doesn't exist, it gives segmentation fault
+// if we close a client and then close the server it doesn't bind again
 
 //utility function to log the serving of a file.
+
+void handleSignal(int signal) {
+    if (signal == SIGINT) {
+        std::cout << "\n[INFO] Server shutting down gracefully..." << std::endl;
+        serverRunning = false;
+        
+        // Close all client connections
+        std::lock_guard<std::mutex> lock(clientSocketsMutex);
+        for (int socket_fd : clientSockets) {
+            close(socket_fd);
+        }
+        clientSockets.clear();
+
+        exit(0);
+    }
+}
+
 void logServingFile(const std::string& path, const std::string& mimetype) {
     std::cout << "Serving file: " << path << " with MIME type: " << mimetype << std::endl;
 }
@@ -64,7 +87,7 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
 
     std::string welcome_message = "Welcome to the chat server !";
     sendMessage(client_socket_fd, welcome_message);
-
+    broadcastMessage(username,  username + " has joined the chat.");
     // Step 3: Handle client commands
     while (true) {
         bytes_received = recv(client_socket_fd, buffer, sizeof(buffer) - 1, 0);
@@ -143,15 +166,10 @@ int main(int argc,char* argv[]){
     while(1){
         //handle client requests.
         //Accept system call .
-        
-        int client_socket_fd = accept(s_fd, (struct sockaddr*)&client_addr, &client_addr_size);
-        if(client_socket_fd>=0)
-        {
-            std::cout<<"Client connected successfully"<<std::endl;
-        }
+          int client_socket_fd = accept(s_fd, (struct sockaddr*)&client_addr, &client_addr_size);
           if (client_socket_fd < 0) {
             std::cerr << "Failed to accept client request." << std::endl;
-            exit(1); // Do not terminate the server, continue accepting other clients
+            continue; // Do not terminate the server, continue accepting other clients
         }
          try {
             std::thread clientThread([client_socket_fd, &users]() {
