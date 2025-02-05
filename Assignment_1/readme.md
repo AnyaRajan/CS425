@@ -65,14 +65,12 @@ The server supports the following client commands:
 - **request.cpp**: Parses HTTP requests from clients, extracts methods and variables, and calls appropriate functions according to user
 - **client.cpp**: Implements client-related functions and loads user data into the online users map from **users.txt**.
 - This modular structure allows for better organization and separation of concerns within the project.
-
 ## Implementation Details
 
 ### Server Startup Process
 1. Server initializes and binds to port 8080
 2. User credentials are loaded from `users.txt`
 3. The server enters an accept loop to handle incoming client connections
-![Alt Text](D:\ANYA\CS425\Assignment_1\pictures\Screenshot 2025-02-05 225117.png)
 
 ### Client Login Flow
 1. Client establishes a connection to the server
@@ -96,6 +94,23 @@ The server supports the following client commands:
 - Triggered by the `/exit` command
 - Server removes the client from all relevant data structures
 - The client's connection is closed, and resources are freed
+
+![image](https://i.postimg.cc/2LBrgr52/Screenshot-2025-02-05-225117.png)
+
+![image](https://i.postimg.cc/xqkfXyPM/Screenshot-2025-02-05-232957.png)
+
+
+![image](https://i.postimg.cc/5jZxLYPG/Screenshot-2025-02-05-233056.png)
+
+![image](https://i.postimg.cc/7f0qVHdL/Screenshot-2025-02-05-233158.png)
+
+![image](https://i.postimg.cc/FYvNntXV/Screenshot-2025-02-05-233252.png)
+
+![image](https://i.postimg.cc/Yvxk5XpK/Screenshot-2025-02-05-233308.png)
+
+![image](https://i.postimg.cc/WDWV3hF5/Screenshot-2025-02-05-233328.png)
+
+![image](https://i.postimg.cc/2q8mr46q/Screenshot-2025-02-05-233356.png)
 
 ## Key Functions
 
@@ -135,7 +150,18 @@ The server supports the following client commands:
 - Multiple logins from the same user account are not supported
 - Very large messages may cause system slowdown
 - Message display might be affected if received while a user is typing
-
+- Maximum Number of Clients:
+- Limited by kern.num_threads = 10240.
+- Considering system overhead, around 8000–9000 concurrent clients can be handled safely.
+- Maximum Number of Groups:
+- Stored in unordered_map, limited by available RAM.
+- Can support up to hundreds of thousands of groups efficiently.
+- Maximum Members per Group:
+- Depends on data structure and memory.
+- Supports up to 50,000–100,000 members per group before performance drops.
+- Maximum Message Size:
+- Defined by net.inet.tcp.sendspace = 131072 bytes (128 KB).
+- Messages larger than 128 KB require chunking.
 ## Challenges Faced
 1. Cross-platform socket library differences (Windows, Linux, Mac)
 2. Message parsing and handling of empty messages
