@@ -13,41 +13,6 @@
 #include<fstream>
 #include"client.cpp"
 
-// remember to add in readme that we can only keep one word group name
-// if close server with Ctrl+C, it's not closing properly
-// sockets are not resued
-// join_group with empty name gives segmentation fault -done
-// if after closing a group, we try to send message to that group, it gives segmentation fault
-// if we try to send message to a group that doesn't exist, it gives segmentation fault
-// if we close a client and then close the server it doesn't bind again
-// if we close a client and then try to send message to that client, it gives segmentation fault
-//
-
-// do client socket mapping beforehand
-// closing a server is not closing the clients
-
-
-//utility function to log the serving of a file.
-
-// void handleSignal(int signal) {
-//     if (signal == SIGINT) {
-//         std::cout << "\n[INFO] Server shutting down gracefully..." << std::endl;
-//         serverRunning = false;
-        
-//         // Close all client connections
-//         std::lock_guard<std::mutex> lock(clientSocketsMutex);
-//         for (int socket_fd : clientSockets) {
-//             close(socket_fd);
-//         }
-//         clientSockets.clear();
-
-//         exit(0);
-//     }
-// }
-
-void logServingFile(const std::string& path, const std::string& mimetype) {
-    std::cout << "Serving file: " << path << " with MIME type: " << mimetype << std::endl;
-}
 
 void handleClient(int client_socket_fd, const std::unordered_map<std::string, std::string>& users) {
     char buffer[1024];
@@ -135,10 +100,7 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
         } else if (req.method == "/msg") {
             std::string target = req.target;
             std::string message = req.headers;
-            for(char c: message){
-                std::cout<<(int)c<<" ";
-            }
-            cout<<endl;
+           
             sendPrivateMessage(client_socket_fd, username,target, message);
 
         } else if (req.method == "/exit") {
@@ -165,13 +127,6 @@ int main()
     s_fd = server.start();
     client_addr_size = sizeof(struct sockaddr_in); 
   std::unordered_map<std::string, std::string> users = loadUsers("users.txt"); 
-//   users["alice"]="password123";
-//     users["bob"]="qwerty456";
-//     users["charlie"]="secure789";
-//     users["dave"]="helloWorld!";
-//     users["eve"]="trustno1";
-//     users["frank"]="letmein";
-//     users["grace"]="passw0rd";
 
 
     while(1){

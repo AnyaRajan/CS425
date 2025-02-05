@@ -103,8 +103,8 @@ void createGroup(int clientSocket, const string& username, string& groupName) {
         }
         groups[groupName] = {};
         groups[groupName].insert(username);
-        cout << "Debug: Group '" << groupName << "' created. Members: " << username << endl;
-        sendMessage(clientSocket, "Group " + groupName + " created successfully. " + username + " has been added to it.\n");
+     //   cout << "Debug: Group '" << groupName << "' created. Members: " << username << endl;
+        sendMessage(clientSocket, "Group " + groupName + " created successfully. \n" );
     }
 }
 

@@ -43,13 +43,13 @@ int main() {
         std::cerr << "Error creating socket." << std::endl;
         return 1;
     }
-    cout<<"Socket created"<<endl;
+   // cout<<"Socket created"<<endl;
 
 
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(8080);
     server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
-    cout<<"Address assigned"<<endl;
+   // cout<<"Address assigned"<<endl;
     if (connect(client_socket, (sockaddr*)&server_address, sizeof(server_address)) < 0) {
         std::cerr << "Error connecting to server." << std::endl;
         return 0;

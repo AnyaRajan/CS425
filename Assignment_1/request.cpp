@@ -41,7 +41,7 @@ int HttpRequest::parseRequest(const std::string& rawRequest)
     std::vector<std::string> parts = split(rawRequest, ' ');
     method = parts[0];
 
-    std::cout << "Debug: Parsed Method: " << method << "\n";
+   // std::cout << "Debug: Parsed Method: " << method << "\n";
 if (method == "/msg" || method == "/group_msg") 
 {
     if(parts.size() < 3 || parts[1].empty() || parts[2].empty())
