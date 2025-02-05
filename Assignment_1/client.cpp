@@ -26,10 +26,7 @@ std::mutex serverMutex;                          // Mutex to ensure thread safet
 // Utility function to send a message to a specific client
 void sendMessage(int clientSocket, const std::string& message) 
 {
-
-   
-    
-     if(send(clientSocket, message.c_str(), message.size(), 0) < 0)
+    if(send(clientSocket, message.c_str(), message.size(), 0) < 0)
     {
         std::cerr << "Failed to send message to client." << std::endl;
     }
@@ -61,7 +58,6 @@ void addClient(int client_socket_fd, const std::string& ip_address, int port, co
 // Function to remove a client from the system
 void removeClient(int client_socket_fd) 
 {
-
     std::lock_guard<std::mutex> lock(serverMutex);
      string username ="";
     // Find the client in the onlineUsers map and remove it
@@ -73,20 +69,45 @@ void removeClient(int client_socket_fd)
             break;
         }
     }
-   
-    // Remove the client from the connected_clients vector
-    auto clientIt = std::remove_if(
-        connected_clients.begin(),
-        connected_clients.end(),
-        [client_socket_fd](const ClientInfo& client) {
-            return client.socket_fd == client_socket_fd;
-        });
 
-    if (clientIt != connected_clients.end()) {
-        connected_clients.erase(clientIt, connected_clients.end());
+    // Remove the client from the connected_clients vector
+    for(auto it = connected_clients.begin(); it != connected_clients.end(); ++it)
+    {
+        if(it->socket_fd == client_socket_fd)
+        {
+            connected_clients.erase(it);
+            break;
+        }
     }
-    onlineUsers.erase(username);
-    broadcastMessage(username, username + " has left the chat.");
+   
+    // // Remove the client from the connected_clients vector
+    // auto clientIt = std::remove_if(
+    //     connected_clients.begin(),
+    //     connected_clients.end(),
+    //     [client_socket_fd](const ClientInfo& client) {
+    //         return client.socket_fd == client_socket_fd;
+    //     });
+    // if (connected_clients != connected_clients.end()) {
+    //     connected_clients.erase(clientIt, connected_clients.end());
+    // }
+    // onlineUsers.erase(username);
+    std::cout<<"remove client"<<std::endl;
+    // broadcastMessage(username, username + " has left the chat.");
+    for(auto x:connected_clients)
+    {
+        cout<<x.username<<" "<<x.socket_fd<<endl;
+    }
+    cout<<endl;
+    for(auto x:onlineUsers)
+    {
+        cout<<x.first<<" "<<x.second<<endl;
+    }
+
+    for (const auto& [user, socket] : onlineUsers) {
+        if (user != username) {
+            sendMessage(socket, username + " has left the chat.");
+        }
+    }
 
 }
 
@@ -150,7 +171,7 @@ void sendGroupMessage(int clientSocket, const std::string& username, const std::
     }
 
     for (const std::string& member : groups[groupName]) {
-        if (member != username && onlineUsers.find(member) != onlineUsers.end()) {
+        if (onlineUsers.find(member) != onlineUsers.end()) {
             sendMessage(onlineUsers[member], "[Group " + groupName + "] " + username + ": " + message + "\n");
         }
     }
@@ -190,23 +211,31 @@ void welcomeClient(int client_socket_fd) {
     sendMessage(client_socket_fd, welcomeMessage);
     // Add more client-handling logic here (e.g., receiving messages, commands)
 }
+
+std::string trim(const std::string& str) {
+    size_t first = str.find_first_not_of(" \t\n\r");
+    if (first == std::string::npos) return ""; // Empty string
+    size_t last = str.find_last_not_of(" \t\n\r");
+    return str.substr(first, (last - first + 1));
+}
+
 //load users
-std::unordered_map<std::string, std::string> loadUsers(const std::string& filePath) {
+std::unordered_map<std::string, std::string> loadUsers(const std::string& filename) {
     std::unordered_map<std::string, std::string> users;
-    std::ifstream file(filePath);
+    std::ifstream file(filename);
 
     if (!file.is_open()) {
-        std::cerr << "Error opening the file: " << filePath << std::endl;
+        std::cerr << "Failed to open the file: " << filename << std::endl;
         return users;
     }
 
     std::string line;
     while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string username, password;
-
-        // Split the line into username and password based on the colon ':'
-        if (std::getline(ss, username, ':') && std::getline(ss, password)) {
+        size_t delimiter_pos = line.find(':');
+        if (delimiter_pos != std::string::npos) {
+            std::string username = line.substr(0, delimiter_pos);  // Extract username
+            std::string password = line.substr(delimiter_pos + 1);  // Extract password
+            password = trim(password);
             users[username] = password;
         }
     }
@@ -214,3 +243,4 @@ std::unordered_map<std::string, std::string> loadUsers(const std::string& filePa
     file.close();
     return users;
 }
+

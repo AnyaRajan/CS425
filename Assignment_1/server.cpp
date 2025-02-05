@@ -30,12 +30,11 @@ public:
             exit(1);
         }
          // Enable SO_REUSEADDR
-    int opt = 1;
-    if (setsockopt(server_socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        std::cerr << "Failed to set SO_REUSEADDR." << std::endl;
-        exit(1);
-    }
-
+        int opt = 1;
+        if (setsockopt(server_socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+            std::cerr << "Failed to set SO_REUSEADDR." << std::endl;
+            exit(1);
+        }
         //config server socket.
         server_addr.sin_family = AF_INET;
         server_addr.sin_port = htons(port);

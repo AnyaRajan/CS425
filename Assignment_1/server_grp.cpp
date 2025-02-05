@@ -106,7 +106,11 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
 
         // Parse client message using HttpRequest
         HttpRequest req;
-        req.parseRequest(clientMessage);
+        int parsed = req.parseRequest(clientMessage);
+        if(parsed<0){
+            sendMessage(client_socket_fd, "Invalid command/syntax\n");
+            continue;
+        }
 
         // Command handling based on parsed request
         if (req.method == "/create_group") 
@@ -131,6 +135,10 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
         } else if (req.method == "/msg") {
             std::string target = req.target;
             std::string message = req.headers;
+            for(char c: message){
+                std::cout<<(int)c<<" ";
+            }
+            cout<<endl;
             sendPrivateMessage(client_socket_fd, username,target, message);
 
         } else if (req.method == "/exit") {
