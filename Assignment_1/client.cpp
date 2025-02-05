@@ -191,28 +191,26 @@ void welcomeClient(int client_socket_fd) {
     // Add more client-handling logic here (e.g., receiving messages, commands)
 }
 //load users
-std::unordered_map<std::string, std::string> loadUsers(const std::string& filename) {
+std::unordered_map<std::string, std::string> loadUsers(const std::string& filePath) {
     std::unordered_map<std::string, std::string> users;
-    std::ifstream file(filename);
+    std::ifstream file(filePath);
 
     if (!file.is_open()) {
-        std::cerr << "Failed to open the file: " << filename << std::endl;
+        std::cerr << "Error opening the file: " << filePath << std::endl;
         return users;
     }
 
     std::string line;
     while (std::getline(file, line)) {
-        size_t delimiter_pos = line.find(':');
-        if (delimiter_pos != std::string::npos) {
-            std::string username = line.substr(0, delimiter_pos);  // Extract username
-            std::string password = line.substr(delimiter_pos + 1);  // Extract password
-            password.pop_back();  // Remove the trailing newline character
+        std::stringstream ss(line);
+        std::string username, password;
+
+        // Split the line into username and password based on the colon ':'
+        if (std::getline(ss, username, ':') && std::getline(ss, password)) {
             users[username] = password;
         }
     }
- 
 
     file.close();
     return users;
 }
-

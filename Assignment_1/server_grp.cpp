@@ -21,7 +21,7 @@
 // if we try to send message to a group that doesn't exist, it gives segmentation fault
 // if we close a client and then close the server it doesn't bind again
 // if we close a client and then try to send message to that client, it gives segmentation fault
-
+//
 
 // do client socket mapping beforehand
 // closing a server is not closing the clients
