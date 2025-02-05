@@ -79,30 +79,6 @@ void removeClient(int client_socket_fd)
             break;
         }
     }
-   
-    // // Remove the client from the connected_clients vector
-    // auto clientIt = std::remove_if(
-    //     connected_clients.begin(),
-    //     connected_clients.end(),
-    //     [client_socket_fd](const ClientInfo& client) {
-    //         return client.socket_fd == client_socket_fd;
-    //     });
-    // if (connected_clients != connected_clients.end()) {
-    //     connected_clients.erase(clientIt, connected_clients.end());
-    // }
-    // onlineUsers.erase(username);
-    std::cout<<"remove client"<<std::endl;
-    // broadcastMessage(username, username + " has left the chat.");
-    for(auto x:connected_clients)
-    {
-        cout<<x.username<<" "<<x.socket_fd<<endl;
-    }
-    cout<<endl;
-    for(auto x:onlineUsers)
-    {
-        cout<<x.first<<" "<<x.second<<endl;
-    }
-
     for (const auto& [user, socket] : onlineUsers) {
         if (user != username) {
             sendMessage(socket, username + " has left the chat.");
