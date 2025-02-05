@@ -5,3 +5,4 @@ david:helloWorld!
 eve:trustno1
 frank:letmein
 grace:passw0rd
+harry:newbie

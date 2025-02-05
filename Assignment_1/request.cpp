@@ -78,7 +78,12 @@ if (method == "/msg" || method == "/group_msg")
             return;
         }
         target = parts[1];
-    } else {
+    }
+    else if(method == "/exit")
+    {
+        return;
+    }
+    else {
         std::cerr << "Unknown command: " << method << std::endl;
     }
 }

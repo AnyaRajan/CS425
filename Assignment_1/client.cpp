@@ -24,14 +24,31 @@ std::vector<ClientInfo> connected_clients;       // List of connected clients
 std::mutex serverMutex;                          // Mutex to ensure thread safety
 
 // Utility function to send a message to a specific client
-void sendMessage(int clientSocket, const std::string& message) {
-    send(clientSocket, message.c_str(), message.size(), 0);
+void sendMessage(int clientSocket, const std::string& message) 
+{
+
+   
+    
+     if(send(clientSocket, message.c_str(), message.size(), 0) < 0)
+    {
+        std::cerr << "Failed to send message to client." << std::endl;
+    }
+
+  
+}
+void broadcastMessage(const std::string& sender, const std::string& message) {
+    std::lock_guard<std::mutex> lock(serverMutex);
+    for (const auto& [username, socket] : onlineUsers) {
+        if (username != sender) {
+            sendMessage(socket, message);
+        }
+    }
 }
 
 // Function to add a client to the system
 void addClient(int client_socket_fd, const std::string& ip_address, int port, const std::string& username) {
     std::lock_guard<std::mutex> lock(serverMutex);
-
+   
     if (onlineUsers.find(username) == onlineUsers.end()) {
         onlineUsers[username] = client_socket_fd; // Add client to onlineUsers
         connected_clients.push_back({client_socket_fd, ip_address, port, username}); // Add to connected_clients
@@ -42,18 +59,21 @@ void addClient(int client_socket_fd, const std::string& ip_address, int port, co
 }
 
 // Function to remove a client from the system
-void removeClient(int client_socket_fd) {
-    std::lock_guard<std::mutex> lock(serverMutex);
+void removeClient(int client_socket_fd) 
+{
 
+    std::lock_guard<std::mutex> lock(serverMutex);
+     string username ="";
     // Find the client in the onlineUsers map and remove it
     for (auto it = onlineUsers.begin(); it != onlineUsers.end(); ++it) {
         if (it->second == client_socket_fd) {
             std::cout << "Client " << it->first << " disconnected." << std::endl;
+            username = it->first;
             onlineUsers.erase(it);
             break;
         }
     }
-
+   
     // Remove the client from the connected_clients vector
     auto clientIt = std::remove_if(
         connected_clients.begin(),
@@ -65,6 +85,8 @@ void removeClient(int client_socket_fd) {
     if (clientIt != connected_clients.end()) {
         connected_clients.erase(clientIt, connected_clients.end());
     }
+    onlineUsers.erase(username);
+    broadcastMessage(username, username + " has left the chat.");
 
 }
 
@@ -149,14 +171,6 @@ void leaveGroup(int clientSocket, const std::string& username, const std::string
 
 
 // Function to broadcast a message to all online users (except sender)
-void broadcastMessage(const std::string& sender, const std::string& message) {
-    std::lock_guard<std::mutex> lock(serverMutex);
-    for (const auto& [username, socket] : onlineUsers) {
-        if (username != sender) {
-            sendMessage(socket, message);
-        }
-    }
-}
 
 // Function to send a private message
 void sendPrivateMessage(int clientSocket, const string& username,const std::string& target, const std::string& message) {
@@ -196,6 +210,7 @@ std::unordered_map<std::string, std::string> loadUsers(const std::string& filena
             users[username] = password;
         }
     }
+ 
 
     file.close();
     return users;

@@ -16,10 +16,16 @@
 // remember to add in readme that we can only keep one word group name
 // if close server with Ctrl+C, it's not closing properly
 // sockets are not resued
-// join_group with empty name gives segmentation fault
+// join_group with empty name gives segmentation fault -done
 // if after closing a group, we try to send message to that group, it gives segmentation fault
 // if we try to send message to a group that doesn't exist, it gives segmentation fault
 // if we close a client and then close the server it doesn't bind again
+// if we close a client and then try to send message to that client, it gives segmentation fault
+
+
+// do client socket mapping beforehand
+// closing a server is not closing the clients
+
 
 //utility function to log the serving of a file.
 
@@ -142,7 +148,8 @@ void handleClient(int client_socket_fd, const std::unordered_map<std::string, st
 }
 
 
-int main(){
+int main()
+{
     Server server = Server(8080);
     struct sockaddr_in client_addr;
     socklen_t client_addr_size;
@@ -163,11 +170,14 @@ int main(){
         //handle client requests.
         //Accept system call .
           int client_socket_fd = accept(s_fd, (struct sockaddr*)&client_addr, &client_addr_size);
+          
           if (client_socket_fd < 0) {
             std::cerr << "Failed to accept client request." << std::endl;
             continue; // Do not terminate the server, continue accepting other clients
         }
-         try {
+         try 
+         {
+             
             std::thread clientThread([client_socket_fd, &users]() {
                 handleClient(client_socket_fd, users);
             });
